@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# 数据文件（太大，不上传）
+main_5m/*.csv
+
+# 结果文件（运行后生成）
+results/*/factor_values.csv
+results/*/group_returns.png
+results/*.csv
+
+# 日志文件
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 临时文件
+temp_*.png
+*.tmp
