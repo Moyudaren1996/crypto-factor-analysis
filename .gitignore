@@ -12,10 +12,9 @@ ENV/
 # 数据文件（太大，不上传）
 main_5m/*.csv
 
-# 结果文件（运行后生成）
-results/*/factor_values.csv
-results/*/group_returns.png
-results/*.csv
+# 结果文件（运行后生成，体积大不上传）
+results/
+Intermediate/
 
 # 日志文件
 *.log
