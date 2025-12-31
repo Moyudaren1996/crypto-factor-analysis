@@ -1,4 +1,6 @@
-#现有因子库
+# 现有因子库
+
+**Momentum-EMADistanceReversion** (周期20) - EMA距离均值回归反转因子,计算价格与EMA的乖离度在历史范围内的相对位置,识别极端偏离处的均值回归反转机会
 
 **Momentum-MOM** (周期1/2/3/6) - 动量指标,计算当前价格与N期前价格的差值,衡量价格变化的绝对动量
 
@@ -62,15 +64,192 @@
 
 **Price-VWAP** (无参数) - 成交量加权平均价,计算累积的成交额除以累积成交量,反映真实的平均成交价格
 
+**Momentum-AsymAccel** (周期24) - 非对称加速度反转因子,分别计算上涨和下跌时的价格加速度,当上涨加速度远大于下跌加速度时预示反转
 
-#废弃因子
+**Oscillator-CSRank-PVDiv** (周期36) - 横截面价量排名背离因子,对所有币种按价格动量和成交量强度分别排名,计算排名背离度识别反转机会
 
-**Momentum-PVAccel** (周期12) - 价格-成交量加速度背离指标,衡量价格动量与成交量支持的不匹配程度。废弃原因:IC和ICIR均未达标(Period1 IC=0.0284/ICIR=0.1537,Period2 IC=0.0092/ICIR=0.0473,均远低于入库标准),经过2次优化后仍无法满足要求,且与现有因子相关性较高(50%+)。
+**Oscillator-VCompress** (参数6-36) - 波动率收缩反转因子,识别波动率极度收缩时期,结合价格相对均线位置捕捉假突破反转信号
 
-**Price-Volume-RankDivergence** (周期12/24) - 价格成交量排名背离因子,计算价格与成交量在N期内排名位置的差异并标准化。废弃原因:经过3次优化仍无法达标,最优版本(24期+zscore标准化)Period1 IC=0.0344/ICIR=0.1847,Period2 IC=0.0126/ICIR=0.0642,均未同时满足IC>0.02和ICIR>0.3的双时间段要求,且与oscillator_rsi系列相关性高达64%,IC衰减率63%表明稳定性不足。
+**Momentum-PME** (参数3-48) - 价格动量极值反转因子,基于当前价格动量在历史范围内的百分位排名识别极值,当动量处于历史极端值时预示均值回归反转机会。
 
-**Volume-VWM** (参数6-12) - 成交量加权动量指标,计算价格收益率乘以相对成交量强度的组合因子。废弃原因:经过3次优化(Momentum-ER→Volume-PVS→Volume-VWM)后,虽然IC双时间段达标(P1=-0.0445/P2=-0.0271),但ICIR未达标(P1=-0.1633/P2=-0.0915,均<0.3),且与momentum_roc_6相关性高达77.89%远超70%阈值,本质上与现有ROC系列因子高度重合,无法提供独立信息增量。
+**Momentum-CrossDev** (周期12) - 截面动量排名离差因子,衡量单个币种动量在所有币种中的百分位排名相对其历史平均排名的偏离,捕捉相对动量异常变化识别反转机会。
 
-**Volatility-HLRM** (参数6-12) - 高低价格比率动量,计算(High-Low)/Close比率的平滑后动量,衡量日内波动幅度的趋势变化。废弃原因:经过3次优化(Price-VPMA→Price-PER→Volatility-HLRM)后均未达标,最终版本IC绝对值极低(P1=0.0006/P2=0.0034,远低于0.02要求),ICIR绝对值极低(P1=0.0025/P2=0.0139,远低于0.3要求),虽然相关性较低(最高33.92%<70%),但预测能力完全不足,无法有效预测未来收益。
+**Momentum-ShortAccelRevert** (参数6-24) - 短期动量加速反转因子,衡量快速动量(30分钟)与中期动量(2小时)的加速度差异,当短期动量强度远超中期动量时识别反转信号。P1 IC=-0.0273/ICIR=-0.1284,P2 IC=-0.0137/ICIR=-0.0590,与oscillator_ar_quality_6_24相关性61.88%。
 
-**Volume-Asymmetry** (周期6) - 成交量分布不对称因子,计算成交量加权的价格在高低区间的相对位置,衡量成交集中在高价区还是低价区。废弃原因:经过3次优化(Price-Efficiency-6→Price-Efficiency-12→Volume-Asymmetry-6)后均未达标,最优版本IC和ICIR均不满足要求(P1 IC=0.0247/ICIR=0.1330,P2 IC=0.0160/ICIR=0.0771,双时间段均未同时满足IC>0.02且ICIR>0.3),且与volume_cmf_6相关性达100%完全重复(数学上等价于蔡金资金流量指标),无法提供任何独立信息增量,IC衰减率35.51%表明稳定性不足。
+**Momentum-IntradayRange** (参数12-48) - 日内波动动量因子,衡量收盘价在高低区间的相对位置动量及振幅趋势变化,捕捉短期反转信号。P1 IC=-0.0149/ICIR=-0.0773,P2 IC=-0.0157/ICIR=-0.0721,最高相关性58%(与EMADistanceReversion)。
+
+**Momentum-AccelReversal** (参数12-6-48) - 动量加速反转因子,计算价格收益率的加速度(二阶导数)并用波动率标准化,当动量突然加速时识别过度反应的反转信号。P1 IC=0.0233/ICIR=0.1050,P2 IC=0.0184/ICIR=0.0772,最高相关性69.79%(与oscillator_ar_quality_6_24)。
+
+**Momentum-PathEfficiency** (参数24-96) - 路径效率动量因子,计算价格净移动距离与实际路径(累计绝对变化)之比,衡量价格运动的效率和方向性强度,短期效率减去长期效率捕捉趋势形成信号。P1 IC=-0.0143/ICIR=-0.0647,P2 IC=-0.0156/ICIR=-0.0653,最高相关性68.89%(与oscillator_rsi_12)。
+
+**Momentum-VolumeWeightedTrend** (周期24) - 成交量加权趋势动量因子,通过计算成交量加权收益率的线性回归斜率来衡量动量趋势,高成交量时的价格变化对趋势判断更重要,因子为负向(做多低值组),捕捉反转信号。P1 IC=-0.0222/ICIR=-0.0792,P2 IC=-0.0242/ICIR=-0.0832,最高相关性59.34%(与momentum_roc_12)。
+
+**Momentum-Dispersion** (参数18-72) - 动量离散度因子,衡量个币种动量相对于市场整体动量的离散程度,计算个币种动量偏离市场平均的程度并用滚动波动率标准化,当某币种动量显著偏离市场整体时存在反转机会。P1 IC=-0.0249/ICIR=-0.0982,P2 IC=-0.0255/ICIR=-0.0932,最高相关性32.88%(与oscillator_csrank_pvdiv_36)。
+
+**Momentum-VolPriceDiv** (参数12-48) - 成交量价格动量背离因子,衡量价格动量与成交量动量的背离程度,计算价格动量时序排名与成交量动量时序排名的差值,当价格强于成交量支持时存在反转机会。P1 IC=-0.0155/ICIR=-0.0843,P2 IC=-0.0102/ICIR=-0.0534,最高相关性57.51%(与EMADistanceReversion)。
+
+**Momentum-VolRatio** (参数18-36) - 成交量动量比率因子,衡量价格动量与成交量动量的相对强度比值,计算价格动量Z-score与成交量动量Z-score的差值,当价格动量未得到成交量支持时存在反转机会。P1 IC=-0.0135/ICIR=-0.0675,P2 IC=-0.0143/ICIR=-0.0673,最高相关性58.92%(与momentum_vol_price_div_12_48)。
+
+**Momentum-UpDownRatio** (参数12-48) - 上下动量比率因子,衡量滚动窗口内上涨动量与下跌动量的相对强度,计算短期(1小时)与长期(4小时)正负收益比率对数之差,当短期上涨力量相对强于长期时识别反转信号。P1 IC=-0.0198/ICIR=-0.0915,P2 IC=-0.0207/ICIR=-0.0890,最高相关性63.68%(与EMADistanceReversion)。
+
+**Momentum-StreakIntensity** (参数3-24-48) - 动量连续性强度因子,结合收益率方向的连续性(streak)和强度(累计收益/ATR)来识别动量状态,当方向持续一致且强度较大时捕捉趋势延续或反转信号。P1 IC=0.0155/ICIR=0.0728,P2 IC=0.0189/ICIR=0.0837,最高相关性63.37%(与oscillator_rsi_6)。
+
+**Momentum-DirectionalPressure** (参数12-48) - 方向性压力因子,通过计算线性加权动量(近期权重更高)与简单平均动量的差异,识别近期动量相对历史趋势的强度变化,用波动率标准化后捕捉反转信号。P1 IC=-0.0147/ICIR=-0.0673,P2 IC=-0.0185/ICIR=-0.0783,最高相关性64.97%(与momentum_path_efficiency_24_96)。
+
+**Volatility-MomentumRatio** (参数12-72) - 波动率动量比率因子,捕捉价格动量与波动率变化之间的非对称关系,计算价格收益率Z-score与ATR变化Z-score的差值,当动量强但波动率扩张慢时预示下跌反转,反之预示上涨反转。P1 IC=0.0164/ICIR=0.0806,P2 IC=0.0200/ICIR=0.0905,最高相关性60.00%(与momentum_vol_price_div_12_48)。
+
+**Volatility-SqueezeRatio** (参数12-48) - 波动率压缩比率因子,计算短期(1小时)与长期(4小时)真实波幅比率的时序百分位排名,结合价格动量方向识别波动率压缩后的反转机会。P1 IC=0.0176/ICIR=0.0812,P2 IC=0.0117/ICIR=0.0507,最高相关性67.51%(与oscillator_rsi_12)。
+
+**Volatility-RangeDeviation** (参数24-72) - 波动率偏离因子,衡量当前波动率相对于历史均值的偏离程度及其变化趋势,计算高低价范围相对于EMA范围的比率动量,并用时序百分位排名结合价格方向识别均值回归反转机会。P1 IC=-0.0110/ICIR=-0.0539,P2 IC=-0.0120/ICIR=-0.0540,最高相关性64.87%(与oscillator_rsi_12)。
+
+# 废弃因子
+
+**Momentum-PVAccel** (周期12) - 价格-成交量加速度背离指标,衡量价格动量与成交量支持的不匹配程度。废弃:IC太低
+
+**Price-Volume-RankDivergence** (周期12/24) - 价格成交量排名背离因子,计算价格与成交量在N期内排名位置的差异并标准化。废弃:IC太低
+
+**Volume-VWM** (参数6-12) - 成交量加权动量指标,计算价格收益率乘以相对成交量强度的组合因子。废弃:相似度过高(与ROC)
+
+**Volatility-HLRM** (参数6-12) - 高低价格比率动量,计算(High-Low)/Close比率的平滑后动量,衡量日内波动幅度的趋势变化。废弃:IC太低
+
+**Volume-Asymmetry** (周期6) - 成交量分布不对称因子,计算成交量加权的价格在高低区间的相对位置。废弃:相似度过高(与CMF等价)
+
+**Oscillator-VWR** (周期24) - 成交量加权反转因子,结合价格偏离度和成交量异常识别反转机会。废弃:ICIR太低
+
+**Trend-PVSynergy** (参数48-12) - 价格波动率协同因子,衡量价格突破与波动率扩张的协同效应。废弃:IC太低
+
+**Price-HLSpread** (参数72-12) - 高低价差比率指标,计算日内波动幅度相对价格的比率变化与价格变化的背离。废弃:IC太低
+
+**Momentum-PriceAcceleration** (参数3-12) - 价格加速度因子,计算价格动量的二阶导数并用趋势强度加权,捕捉动量加速或减速信号。废弃:IC太低
+
+**Oscillator-PV-Divergence** (参数12-48/6-24) - 价量背离震荡器,基于Alpha101思想计算价格与成交量的背离或协同关系。废弃:IC太低
+
+**Momentum-VolConfirm** (参数3-12) - 成交量确认的多周期动量反转因子,计算短期反转信号并用成交量强度确认、中期趋势过滤和波动率调整。废弃:IC太低
+
+**Price-HLPM** (参数36-6) - 高低价位置动量因子,基于Alpha101思想计算价格在高低区间相对位置的动态变化并用ATR标准化。废弃:IC太低
+
+**Oscillator-BPressure** (参数6-24) - 买卖压力非对称震荡因子,计算收盘价在日内高低区间的位置反映买卖力量,用成交量加权并计算短期vs长期变化。废弃:相似度过高(与CMF)
+
+**Volatility-BreakoutQuality** (参数24-6) - 突破质量因子,结合价格在区间内的相对位置和波动率水平衡量突破质量。废弃:IC太低
+
+**Trend-TCONS** (参数24-72) - 多尺度趋势一致性指标,计算短期趋势与长期趋势方向的一致性并用波动率标准化。废弃:IC太低
+
+**Momentum-CrossRank** (参数6-24) - 截面排名动量因子,计算短期与长期收益率在币种横截面上的排名差异,捕捉相对强度轮动效应。废弃:IC太低
+
+**Momentum-RSkew-Reversal** (参数24-72) - 收益率偏度反转因子,基于收益率分布偏度捕捉反转信号并用相对ATR标准化。废弃:IC太低
+
+**Oscillator-RSIDev** (参数6-24) - RSI偏离反转因子,计算短期RSI相对于其移动平均的偏离度并取负值,捕捉超买超卖后的反转信号。废弃:相似度过高(与RSI)
+
+**Oscillator-VARevers** (参数6-24) - 波动率调整反转因子,基于波动率标准化的价格冲击(收益率/波动率)识别短期过度反应的反转信号。废弃:ICIR太低
+
+**Oscillator-HLPosReversal** (参数24-6) - 高低价位置动量反转因子,计算收盘价在N期高低区间的相对位置(类似Williams%R),并衡量其短期动量变化作为反转信号。废弃:相似度过高(与Stoch/Williams)
+
+**Oscillator-MomentumReversion** (参数6-18) - 短期动量反转因子,基于短期与中期动量强度的差异识别反转机会。废弃:IC太低
+
+**Price-VWAPDevAccel** (参数24-6-36) - VWAP偏离加速反转因子,计算收盘价相对VWAP的偏离度,并衡量其加速度变化作为反转信号。废弃:相似度过高(与ROC)
+
+**Oscillator-ExtremeReversal** (参数48-12) - 极值区间反转因子,基于价格在滚动窗口内的分位数位置捕捉极值反转,当价格处于极端分位数时识别反转机会。废弃:相似度过高(与RSI)
+
+**Momentum-RAD** (参数6-24) - 收益率加速度离散因子,计算价格收益率的二阶导数(加速度)并用收益率波动性标准化,捕捉价格运动的非可持续性。废弃:相似度过高
+
+**Oscillator-VolMomReversion** (参数12-24) - 成交量确认的动量反转因子,通过成交量萎缩来确认价格动量极值的反转信号。废弃:ICIR太低
+
+**Price-GapVolumeReversion** (参数12-6) - 跳空成交量反转因子,基于开盘跳空与成交量强度的组合识别反转机会。废弃:IC太低
+
+**Oscillator-MomentumExtrema** (参数6-48) - 短期动量极值反转因子,基于短期价格动量在历史范围内的百分位排名识别极值反转机会。废弃:相似度过高(与EMADistanceReversion)
+
+**Oscillator-VolCrushReversion** (周期12) - 波动率压缩反转因子,基于波动率极度压缩和价格极端偏离的多层次组合识别反转机会。废弃:IC太低
+
+**Oscillator-MomentumDivergence** (参数12-36) - 短期与长期动量乖离反转因子,计算短期与长期ROC的差值识别动量分歧反转机会。废弃:相似度过高(与RSI)
+
+**Oscillator-ExtremeReversal** (周期12) - 高低价极端位置反转因子,基于价格在N期高低价极端位置识别假突破反转。废弃:IC太低
+
+**Oscillator-MomentumMeanReversion** (周期12/6-48) - 动量均值回归反转因子,基于短期价格ROC与其标准差的比值识别均值回归机会。废弃:相似度过高(与RSI/Stoch)
+
+**Oscillator-ExtremeReversal** (周期24, 多版本) - 均值回归反转因子,基于价格位置/价量背离/成交量/动量加速度等多维度尝试的反转因子。废弃:相似度过高(与RSI)
+
+**Trend-VolIntensity** (参数6-24) - 成交量趋势强度因子,基于价格方向与成交量变化的协同关系识别趋势延续机会。废弃:IC太低且相似度过高(与TSI 76%)
+
+**Trend-SlopeConsistency** (周期36) - 趋势斜率一致性因子,基于价格线性回归斜率和拟合优度(R²)衡量趋势强度和稳定性。废弃:样本外ICIR不达标(0.047<0.05)且相似度过高(与TSI 76%)
+
+**Momentum-MSSynergy** (参数12-48-144) - 多尺度动量协同因子,衡量短期(1h)、中期(4h)、长期(12h)动量的方向一致性和最小强度。废弃:IC太低(P1=-0.003,P2=-0.006),尝试过动量衰减率、成交量加权动量排名(相关性86%)、动量效率梯度(IC仅0.006)等变体均不达标
+
+**Momentum-VolWeighted** (参数3-24) - 成交量加权动量因子,结合价格短期动量(3周期)与成交量强度(24周期)识别支撑强度。废弃:IC太低(P1=-0.0255/P2=-0.0211,均不达0.01标准),经过三次优化(包括动量加速反转、高低价动量极值反转、成交量加权动量)均无法改善IC信号,与oscillator_extreme_velocity_3_48相关性66.84%
+
+**Momentum-VolWeightedReversal** (参数12-48) - 成交量加权动量反转因子,计算成交量加权的价格动量并用历史百分位排名识别极端反转机会。废弃:IC/ICIR达标(P1 IC=0.0174/ICIR=0.0824,P2 IC=0.0185/ICIR=0.0806),但与EMADistanceReversion相关性过高(76.08%),尝试动量效率因子(IC太低)和动量一致性因子(IC太低且与TSI相关75.72%)均不达标
+
+**Momentum-Exhaustion** (周期36) - 动量耗竭反转因子,结合累计收益率、方向一致性和动量强度识别反转机会。废弃:P2 ICIR不达标(P1 IC=0.0230/ICIR=0.0845,P2 IC=0.0133/ICIR=0.0464<0.05),尝试过趋势突破因子(IC太低)、动量加速反转(IC太低)、动量效率因子(相关性90%与TSI)均不达标
+
+**Momentum-CumStrength** (参数6-24-72) - 多时间尺度动量累积强度因子,计算短(30分钟)/中(2小时)/长(6小时)三个时间尺度收益率的方向一致性与强度加权和。废弃:IC/ICIR达标(P1 IC=-0.0317/ICIR=-0.1077,P2 IC=-0.0263/ICIR=-0.0847),但与RSI_24相关性过高(79%),尝试过TrendBreak(相关性77%与RSI)、MomentumSlope(IC太低)、SkewReversal(IC太低)均不达标
+
+**Momentum-TrendBreakIntensity** (参数24-72) - 趋势突破强度因子,结合价格区间位置、方向一致性和标准化动量衡量突破强度。废弃:P1接近达标(IC=-0.0142/ICIR=-0.061),但P2 ICIR不达标(0.047<0.05)且与RSI_24相关性过高(71.55%),尝试过上下行动量比率(相关性88%与RSI)、动量梯度稳定性(IC太低0.008)、动量集中度(IC太低0.001)均不达标
+
+**Momentum-BreakoutVelocity** (参数24-6-3) - 突破速度动量因子,计算价格在近期高低区间的相对位置变化速度,捕捉过度扩张的反转信号。废弃:IC/ICIR达标(P1 IC=-0.0197/ICIR=-0.0950,P2 IC=-0.0136/ICIR=-0.0610),但与oscillator_ar_quality_6_24相关性过高(75.58%),尝试过VelocitySlope(IC太低)、RegimeShift(IC太低)、MarketDeviation(IC太低)均不达标
+
+**Momentum-Quality** (参数24-48-96) - 动量质量因子,计算累积收益率与收益率波动率之比(类似动量Sharpe Ratio),并转换为时序百分位排名。废弃:IC/ICIR达标(P1 IC=-0.0165/ICIR=-0.0753,P2 IC=-0.0183/ICIR=-0.0755),但与momentum_path_efficiency_24_96相关性过高(91.56%),尝试过动量一致性背离(IC太低)、动量衰减率(IC太低)、动量梯度(IC太低且相关性77%)均不达标
+
+**Momentum-RelativeRange** (参数12-48) - 相对区间位置动量因子,计算收盘价在短期(1h)和长期(4h)高低区间内的相对位置差异,用成交量变化加权。废弃:P1达标(IC=-0.0168/ICIR=-0.0864)但P2不达标(IC=-0.0064/ICIR=-0.0309),尝试过动量梯度变化(IC太低P1=-0.0045/P2=-0.0055)、动量惯性突破(IC太低P1=-0.0086/P2=-0.0080)、摆动强度(IC太低P1=-0.0055/P2=-0.0060)均不达标
+
+**Momentum-TrendStrength** (参数24-48-72) - 趋势强度动量因子,用ATR标准化动量并计算Z-score识别极值反转。废弃:IC/ICIR达标(P1 IC=-0.0164/ICIR=-0.0734,P2 IC=-0.0195/ICIR=-0.0789),但与momentum_path_efficiency_24_96相关性过高(91.16%),尝试过HighLowBreak高低价突破(IC太低P1=-0.006/P2=0.002)、GapFollow跳空跟随(IC太低P1=-0.001/P2=0.001)、VolWeightedSkew成交量加权偏度(IC太低P1=-0.003/P2=-0.007)均不达标
+
+**Momentum-ReversalStrength** (参数24-6-12) - 动量反转力度因子,衡量价格在高低区间相对位置的变化速度,用Z-score标准化后识别反转信号。废弃:IC/ICIR均不达标(P1 IC=0.0019/ICIR=0.0092,P2 IC=0.0099/ICIR=0.0455),尝试过SlopeStability斜率稳定性(P1 IC=0.0036/P2 IC=0.0051,ICIR均<0.03)、GradientChange动量梯度变化(IC/ICIR达标P1 IC=0.0196/ICIR=0.0929,P2 IC=0.0118/ICIR=0.0513,但与short_accel_revert相关性85.45%)、VolCov价量协方差(IC接近0)均不达标
+
+**Momentum-EnergyDecay** (参数18-72) - 动量能量衰减因子,衡量累积动量能量(绝对收益累加)与净位移的效率比,结合方向识别趋势疲劳反转信号。废弃:P1接近达标但未满足(P1 IC=0.0093/ICIR=0.0482),P2达标(IC=0.0106/ICIR=0.0522),与oscillator_rsi_12相关性52%。尝试过PersistenceShift持续性突变(IC太低P1=0.001/P2=-0.0003)、InertiaRatio惯性比率(IC太低P1=-0.006/P2=-0.002)、VolNormDiv波动率标准化背离(IC太低P1=0.0009/P2=0.0003)均不达标
+
+**Volatility-RangeEfficiency** (参数18-72) - 波幅效率因子,计算价格净移动距离与累积日内波幅之比,衡量价格运动效率。废弃:IC不达标(P1 IC=0.0046/ICIR=0.0221,P2 IC=0.0061/ICIR=0.0276),尝试过RegimeShift波动率区制变化(P1 IC=-0.0036,P2 IC=-0.0032)、SpikeReversal波动率突变反转(P1 IC=-0.0030,P2 IC=-0.0036)、UpDownRatio上下行波动率比(P1达标IC=-0.0117/ICIR=-0.0514,但P2不达标IC=-0.0042/ICIR=-0.0172且与TSI相关性74%)均不达标
+
+**Volatility-AsymRatio** (周期36) - 波动率非对称比率因子,衡量上涨波动率与下跌波动率的差异。废弃:P1达标(IC=-0.0173/ICIR=-0.0787)但P2不达标(IC=-0.0083/ICIR=-0.0357),尝试过RangeMomentum波幅动量(IC太低P1=0.0024/P2=-0.0064)、RelativeATR相对ATR变化(IC太低P1=-0.0001/P2=0.0054)、ATRContraction ATR收缩排名(IC太低P1=-0.0053/P2=-0.0061)均不达标
+
+**Volatility-RangeSkew** (周期36) - 日内波幅偏度因子,计算(close-open)/(high-low)比率的滚动偏度,捕捉K线形态的非对称性。废弃:IC不达标(P1 IC=0.0055/ICIR=0.0283,P2 IC=0.0039/ICIR=0.0192),与TSI相关性56.87%。尝试过GK_Efficiency Garman-Klass波动率效率(IC太低P1=-0.0070/P2=-0.0038)、SpikePercentile波动率突刺分位数(IC太低P1=0.0055/P2=0.0042)、RV_Momentum已实现波动率动量(IC太低P1=0.0022/P2=0.0024)均不达标
+
+**Volatility-HLRatioMom** (参数6-24-48) - 高低价比率动量因子,基于日内波动幅度(high/low)变化趋势结合成交量权重。废弃:IC不达标(P1 IC=-0.0052/ICIR=-0.0220,P2 IC=-0.0024/ICIR=-0.0094),最高相关性30%(与ADX)。尝试过Clustering波动率聚类(IC太低P1=-0.003/P2=0.0005)、BreakoutIntensity突破强度(IC达标P1=0.030/P2=0.020,但与RSI相关性77%)、TRAccel真实波幅加速度(IC太低P1=-0.001/P2=0.0006)均不达标
+
+**Volatility-RetVolRatio** (参数12-48) - 收益波动率比率因子,计算累积收益率除以同期已实现波动率并转换为历史百分位排名,识别收益率相对波动率过高的极端情况。废弃:IC/ICIR达标(P1 IC=0.0209/ICIR=0.0958,P2 IC=0.0222/ICIR=0.0938),但与EMADistanceReversion相关性过高(79.15%>70%)。优化路径:RegimeRatio波动率区制比率(IC太低P1=0.0019/P2=0.0010)、IntradayMom日内波动率动量(IC太低P1=0.0031/P2=0.0024)、TurningPoint波动率拐点(IC太低P1=0.0072/P2=0.0023)均不达标
+
+**Volatility-CrossRank** (周期36) - 波动率截面排名因子,计算每个币种已实现波动率在横截面上的百分位排名,基于低波动率异象识别机会。废弃:P1达标(IC=-0.0156/ICIR=-0.0505)但P2 ICIR不达标(IC=-0.0125/ICIR=-0.0404<0.05),最高相关性25.55%(与trend_sma_600)。尝试过ParkinsonRatio波动率比率(IC太低P1=-0.0037/P2=-0.0003)、VolatilityAcceleration波动率加速度(IC太低P1=-0.0034/P2=-0.0001)、TrueRange波动率排名48周期(IC太低P1=0.0034/P2=-0.0007)均不达标
+
+**Volatility-RangePercentile** (参数48-24) - 波幅分位动量因子,计算价格在高低区间的相对位置并用波动率分位数加权,低波动时价格极端位置权重更高。废弃:P1达标(IC=-0.0230/ICIR=-0.1135)但P2不达标(IC=-0.0086/ICIR=-0.0404),最高相关性69%(与RSI_12临界达标)。尝试过DirectionalMomentum方向性动量(P1 IC=-0.012/ICIR=-0.056达标,P2 IC=-0.008/ICIR=-0.037不达标,与path_efficiency相关性84%)、ConsecutiveExtreme连续极端波动(IC太低P1=-0.003/P2=-0.002)、BodyRatio K线实体占比(IC太低P1=0.0008/P2=-0.002)均不达标
+
+**Volatility-WickSkew** (参数18-72) - 日内波动率偏度因子,通过分析K线上下影线占比计算买卖力量的非对称性。废弃:IC太低(P1 IC=-0.0009/ICIR=-0.0053,P2 IC=0.0019/ICIR=0.0102),最高相关性30.48%(与momentum_intraday_range_12_48)。尝试过Autocorr波动率自相关(IC太低P1=0.0023/P2=0.004)、RegimeShock波动率区制冲击(IC太低P1=0.0023/P2=0.003)均不达标
+
+**Volatility-RelativeAnomaly** (参数24-72) - 相对波动率异常因子,基于横截面波动率位置(Parkinson+收益率波动率)结合时序波动率变化率,捕捉低波动率异象。废弃:IC达标(P1 IC=0.0140/P2 IC=0.0120)但ICIR不达标(P1 ICIR=0.0426/P2 ICIR=0.0364<0.05),最高相关性26%(与SMA_600)。优化路径:TrendPersistence波动率趋势持续性(IC太低P1=0.005/P2=0.0025)、SpikeReversal波动率突变反转(IC太低P1=0.005/P2=0.0038)、CompressionRelease波动率压缩释放(IC/ICIR达标P1 IC=-0.0235/ICIR=-0.1038,P2 IC=-0.0268/ICIR=-0.1085,但与ROC_12相关性77%)均不达标
+
+**Volatility-IntradayIntensity** (参数12-48) - 日内波动强度因子,结合收盘价在高低区间的相对位置与波动率变化比率识别反转信号。废弃:IC太低(P1 IC=0.0043/ICIR=0.0209,P2 IC=-0.0000/ICIR=-0.0000),最高相关性16.24%(与momentum_roc_1)。优化路径:GK_Momentum Garman-Klass波动率动量(IC太低P1=-0.0041/P2=-0.0060)、RegimeReversal波动率区制反转(IC太低P1=-0.0011/P2=0.0041)、Surprise波动率惊奇(IC太低P1=-0.0022/P2=0.0071)均不达标
+
+**Volatility-ClusteringMomentum** (参数24-96) - 波动率聚类动量因子,基于波动率聚类效应衡量当前波动率相对于预期水平的偏离度并结合价格动量方向识别反转机会。废弃:IC太低(P1 IC=-0.0040/ICIR=-0.0191,P2 IC=-0.0043/ICIR=-0.0194),最高相关性25.48%(与RSI_72)。优化路径:AccelReversal波动率加速度反转(IC太低P1=-0.0010/P2=-0.0033)、RegimeShift波动率区制变化(IC太低P1=-0.0032/P2=-0.0038)、SqueezeBreakout波动率压缩突破(IC太低P1=-0.0046/P2=-0.0059)均不达标
+
+**Volatility-RangeDispersion** (参数48-96) - 波幅波动率离散因子,衡量Parkinson波动率(基于高低价)与收盘价波动率之间的离散程度。废弃:IC太低(P1 IC=0.0039/ICIR=0.0211,P2 IC=0.0019/ICIR=0.0099),最高相关性7.21%(与CHOP_6)。优化路径:PriceRangeAnomaly价格区间异常(P1 IC=-0.0084不达标,P2 IC=-0.0124达标)、RegimeTransition区制转换(IC/ICIR均达标P1 IC=-0.0248/ICIR=-0.094,P2 IC=-0.0238/ICIR=-0.087,但与ROC_12相关性77.07%)、Skewness波动率偏度(P1达标IC=-0.0136/ICIR=-0.064,P2不达标IC=-0.0097/ICIR=-0.043)均不达标
+
+**Volatility-ATRRatio** (参数6-72-48) - ATR比率因子,计算短期ATR与长期ATR的比率Z-score并结合横截面排名,识别波动率异常扩张的币种。废弃:IC太低(P1 IC=0.0016/ICIR=0.0083,P2 IC=0.0006/ICIR=0.0031),最高相关性11.94%(与volatility_momentum_ratio_12_72)。优化路径:TailRatio尾部波动率比率(IC太低P1=0.0002/P2=0.0011)、BarEfficiency K线效率(IC/ICIR达标P1 IC=0.0161/ICIR=0.0812,P2 IC=0.0207/ICIR=0.0917,但与momentum_intraday_range_12_48相关性76%)、SpreadMomentum波幅变化动量(IC太低P1=0.0003/P2=-0.001)均不达标
+
+**Volatility-TermStructure** (参数6-36-72) - 波动率期限结构因子,衡量极短期(30分钟)与中期(3小时)Parkinson波动率比值的Z-score,结合价格方向识别反转信号。废弃:IC太低(P1 IC=0.0044/ICIR=0.0231,P2 IC=0.0020/ICIR=0.0100),最高相关性17.61%(与RSI_12)。优化路径:Persistence波动率自相关持续性(IC太低P1=-0.0044/P2=-0.0006)、ReturnEfficiency收益波动效率(IC/ICIR达标P1 IC=0.0160/ICIR=0.0747,P2 IC=0.0202/ICIR=0.0868,但与vol_ratio相关性74%)、VolumeDivergence波动率成交量背离(IC太低P1=-0.0042/P2=-0.0024)均不达标
+
+**Volatility-ExtremeReversion** (参数12-72) - 波动率极值回归因子,结合短期/长期波动率比值的历史分位与价格在区间的相对位置识别反转信号。废弃:IC/ICIR达标(P1 IC=0.0146/ICIR=0.0685,P2 IC=0.0119/ICIR=0.0515),但与oscillator_rsi_24相关性过高(80.54%>70%)。优化路径:TrendCorrelation波动率与收益率相关性(IC太低P1=0.003/P2=0.007)、VolumePressure成交量加权波动压力(IC太低P1=-0.006/P2=-0.001)、UpDownAsym上下行波动率非对称(P1接近达标IC=-0.0104/ICIR=-0.0487,P2不达标IC=-0.006/ICIR=-0.025,相关性57%)均不达标
+
+**Volatility-AdjustedSkew** (参数12-48) - 波动率调整偏度因子,计算收益率除以波动率后的标准化收益序列偏度,捕捉风险调整后收益分布不对称性。废弃:IC太低(P1 IC=0.0050/ICIR=0.0246,P2 IC=0.0017/ICIR=0.0084),最高相关性28%(与RSI_72)。优化路径:JumpMomentum波动率跳跃动量(IC太低P1=0.0032/P2=0.0003)、RevertSpeed波动率回归速度(IC太低P1=-0.0036/P2=-0.0006)、TrendAccel波动率趋势加速(IC太低P1=0.0017/P2=0.0022)均不达标
+
+**Volatility-Inertia** (参数6-36-72) - 波动率惯性因子,衡量波动率偏离度与持续性强度的乘积,识别高/低波动状态的持续性。废弃:IC太低(P1 IC=-0.0007/ICIR=-0.0037,P2 IC=0.0034/ICIR=0.0161),最高相关性6.33%(与volatility_momentum_ratio_12_72)。优化路径:VolOfVol波动率的波动率(IC太低P1=0.00002/P2=-0.0027)、GapMomentum波动率缺口动量(IC太低P1=0.0004/P2=0.0069)、Velocity波动率速度(IC太低P1=0.0022/P2=0.0045)均不达标
+
+**Volatility-AsymMomentum** (参数24-48) - 波动率非对称动量因子,基于上涨波动与下跌波动的差异变化捕捉反转机会。废弃:P2不达标且相关性过高(P1 IC=0.0164/ICIR=0.0774达标,P2 IC=0.0091/ICIR=0.0397不达标),最高相关性72.77%(与momentum_path_efficiency_24_96)。优化路径:AccelRank波动率加速度排名(IC太低P1=-0.0026/P2=0.0036)、SurpriseReversal波动率惊奇反转(IC/ICIR达标P1 IC=0.0395/ICIR=0.1804,P2 IC=0.0273/ICIR=0.1137,但与RSI_5相关性83.39%)、RelativeStrength波动率相对强度(IC太低P1=0.0059/P2=0.0017,相关性9.84%)均不达标
+
+**Volatility-DirectionalBias** (参数18-72) - 波动率方向偏差因子,衡量价格上涨与下跌时波动率行为的非对称性。废弃:IC/ICIR达标(P1 IC=-0.0249/ICIR=-0.1196,P2 IC=-0.0239/ICIR=-0.1071),但与RSI_6相关性过高(82.91%)。优化路径:ClusterStrength波动率聚类强度(IC太低P1=-0.0066/P2=-0.0048,相关性12%)、UpDownDelta上下行波动率变化差(IC太低P1=-0.0075/P2=-0.0041,相关性38.57%)均不达标
+
+**Volatility-CrossMomentum** (参数12-48) - 波动率截面动量因子,利用Parkinson波动率在横截面上的排名变化来预测收益。废弃:IC太低(P1 IC=0.0023/ICIR=0.0131,P2 IC=-0.0024/ICIR=-0.0129且方向相反),最高相关性18.74%(与volatility_momentum_ratio_12_72)。优化路径:GradientReversal波动率梯度反转(IC太低P1=-0.0018/P2=0.0000)、ReturnDivergence波动率收益背离(IC太低P1=-0.0029/P2=-0.0072)、SpikeIntensity波动率突刺强度(IC太低P1=-0.0054/P2=-0.0009)均不达标
+
+**Volatility-RegimeBreak** (参数12-48) - 波动率区制突破因子,基于Parkinson波动率的短期/长期比值识别波动率突变,结合价格在高低区间的相对位置捕捉反转信号。废弃:IC/ICIR达标(P1 IC=0.0153/ICIR=0.0713,P2 IC=0.0130/ICIR=0.0567),但与oscillator_rsi_24相关性刚好超标(70.70%>70%)。优化路径:PersistenceFatigue波动率持续性疲劳(IC太低P1=-0.0029/P2=0.0044,且方向不稳定)、MeanReversion波动率均值回归信号(IC太低P1=0.0014/P2=0.0026,相关性仅12%)均不达标
+
+**Volatility-Utilization** (参数12-48) - 波动率利用率因子,衡量日内波幅被有效利用的程度(|close-open|/(high-low))的短期与长期差异,结合价格动量识别趋势过度延伸的反转信号。废弃:IC太低(P1 IC=-0.0027/ICIR=-0.0153,P2 IC=-0.0031/ICIR=-0.0166),最高相关性11.16%(与short_accel_revert)。优化路径:ContractionSignal波动率收缩信号(IC/ICIR达标P1 IC=-0.0181/ICIR=-0.0845,P2 IC=-0.0141/ICIR=-0.0617,但与SqueezeRatio相关性86.77%)、CurvatureReversal波动率曲率反转(IC太低P1=0.0047/P2=0.0031)、CSMomentum波动率横截面动量(IC太低P1=-0.0032/P2=-0.0052)均不达标
+
+**Volatility-EstimatorDivergence** (周期48) - 波动率估计器分歧因子,衡量收益率波动率、Parkinson波动率、真实波幅波动率三种估计方式的离散程度。废弃:IC太低(P1 IC=0.0070/ICIR=0.0354,P2 IC=0.0025/ICIR=0.0121),最高相关性60.64%(与RSI_48)。优化路径:GradientReversal波动率梯度反转(IC太低P1=-0.0034/ICIR=-0.0148,P2=-0.0082/ICIR=-0.0345,相关性28%)、DecayRate波动率衰减率(IC接近达标P1=0.0075/ICIR=0.0374,P2 IC=0.0031/ICIR=0.0154,相关性36.94%)、CSOutlier横截面离群度(IC太低P1=-0.0053/ICIR=-0.0291,P2=-0.0027/ICIR=-0.0143,相关性仅21.33%)均不达标
+
+**Volatility-TRPersistence** (参数24-72) - 真实波幅持续性因子,衡量TR短期与长期均值的Z-score偏离结合价格方向捕捉反转信号。废弃:IC太低(P1 IC=0.0046/ICIR=0.0222,P2 IC=0.0026/ICIR=0.0112),最高相关性23.92%(与RSI_72)。优化路径:RVRatio已实现波动率比率(IC太低P1=-0.0020/P2=-0.0043)、HLAccel高低价波动加速度(IC太低P1=-0.0001/P2=0.0044)均不达标
+
+**Volatility-ShockAccel** (参数12-48) - 波动率冲击加速度因子,计算TR的二阶变化(加速度)结合价格方向识别波动率突变反转信号。废弃:IC/ICIR达标(P1 IC=0.0158/ICIR=0.0738,P2 IC=0.0134/ICIR=0.0589),但与volatility_squeeze_ratio_12_48相关性过高(88.97%)。优化路径:ReturnCorrelation波动率收益率相关性(P1 IC=-0.0103达标,P2 IC=-0.0035不达标,相关性43%)、RangeStability波动率区间稳定性(IC太低P1=-0.0011/P2=-0.0025,相关性8.8%)均不达标
+
+**Volatility-TRMomentum** (参数12-48) - 真实波幅动量因子,基于TR短期/长期比值结合价格方向的历史百分位排名识别反转信号。废弃:P2 ICIR不达标且相关性过高(P1 IC=0.0147/ICIR=0.0693达标,P2 IC=0.0112达标但ICIR=0.0491<0.05),与volatility_squeeze_ratio_12_48相关性91.98%。优化路径:TransitionSpeed波动率转换速度(IC太低P1=0.002/P2=-0.002,方向不一致)、Concentration波动率集中度(IC太低P1=-0.0004/P2=0.0075)、ExpansionLead波动率扩张领先(IC太低P1=-0.001/P2=0.003)均不达标
+
+**Volatility-UpdownGradient** (参数12-48-96) - 上下行波动率梯度因子,分别计算上行波动(正收益平方和)和下行波动(负收益平方和)的比值变化,短期与长期比值的对数差转换为百分位排名识别反转机会。废弃:IC/ICIR达标(P1 IC=0.0151/ICIR=0.0723,P2 IC=0.0147/ICIR=0.0659),但与EMADistanceReversion相关性过高(71.92%>70%)。优化路径:CVMomentum变异系数动量(IC太低P1=0.0007/P2=0.0057)、ParkinsonCurvature波动率曲率(IC太低P1=0.0013/P2=0.0030)、RangeBreakoutMomentum波幅突破动量(IC不达标P1=0.0074/P2=0.0073,相关性29%)均不达标
+
+**Volatility-RangeMomRatio** (参数12-48) - 波幅动量比率因子,衡量价格动量Z-score与波幅变化Z-score的差值,识别动量强但波幅变化慢（趋势可持续）或波幅变化快但动量弱（假突破）的情况。废弃:IC/ICIR达标(P1 IC=-0.0181/ICIR=-0.0853,P2 IC=-0.0205/ICIR=-0.0895),但与volatility_momentum_ratio_12_72相关性过高(75.62%>70%)。优化路径:TailRisk尾部风险因子(IC太低P1=0.003/P2=0.0005)、VolumeVolCorr成交量波动率相关性(IC太低P1=-0.0001/P2=0.0009)、RealizedSkew已实现偏度(IC不达标P1=-0.0071/P2=0.0047且方向不一致)均不达标
+
+**Volatility-Concentration** (参数24-72) - 波动率集中度因子,使用HHI指数衡量波动率在时间窗口内的分布集中程度,结合价格方向识别反转机会。废弃:IC太低(P1 IC=-0.0044/ICIR=-0.0219,P2 IC=-0.0033/ICIR=-0.0153),最高相关性26.52%(与squeeze_ratio)。优化路径:JumpIntensity波动率跳跃强度(IC太低P1=-0.0030/P2=-0.0025)、BodyVolRatio K线实体波动率比(IC太低且方向不一致P1=-0.0006/P2=+0.0038)、ReturnKurtosis收益率峰度(IC太低P1=-0.0044/P2=-0.0010)均不达标
