@@ -1,5 +1,23 @@
+# 基础数据处理
 pandas>=1.5.0
 numpy>=1.23.0
+
+# 绘图
 matplotlib>=3.6.0
+seaborn>=0.12.0
+
+# 科学计算
 scipy>=1.9.0
-pandas-ta>=0.3.14
+
+# 机器学习
+scikit-learn>=1.2.0
+
+# 梯度提升模型
+lightgbm>=4.0.0
+xgboost>=2.0.0
+
+# 技术指标分析 (需要从GitHub安装: pip install git+https://github.com/Data-Analisis/Technical-Analysis-Indicators---Pandas)
+# pandas-ta>=0.3.14b0
+
+# 其他工具
+joblib>=1.2.0

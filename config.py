@@ -32,7 +32,7 @@ N_GROUPS = 5  # 分组数量（quintile）
 FORWARD_PERIODS = 6  # 预测周期（5分钟，即1个周期）
 
 # 路径配置
-DATA_DIR = '../main_5m'  # 数据目录
+DATA_DIR = 'main_5m'  # 数据目录
 FACTOR_DIR = 'factors'  # 因子定义目录
 RESULT_DIR = 'results'  # 分析结果目录
 
