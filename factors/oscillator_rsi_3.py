@@ -1,29 +1,36 @@
 """
-Oscillator指标 - RSI (使用pandas_ta)
+Oscillator指标 - RSI (Relative Strength Index)
 
 因子描述:
-    使用pandas_ta库计算的RSI技术指标
+    相对强弱指数，衡量价格变动速度和变化的动量振荡器
 
 参数:
-    length: 3 (15分钟)
+    length: 3
+
+计算公式:
+    delta = close.diff()
+    gain = delta.where(delta > 0, 0)
+    loss = (-delta).where(delta < 0, 0)
+    avg_gain = gain.ewm(alpha=1/length, min_periods=length).mean()
+    avg_loss = loss.ewm(alpha=1/length, min_periods=length).mean()
+    RS = avg_gain / avg_loss
+    RSI = 100 - (100 / (1 + RS))
 
 输出:
-    标准化因子值
+    因子值DataFrame (0-100)
 
 数据依赖:
-    - OHLCV数据
+    - close: 收盘价
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算RSI因子 (pandas_ta)
+    计算RSI因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
@@ -31,34 +38,22 @@ def calculate(data):
     Returns:
         pd.DataFrame: 因子值
     """
-    # 对每个币种分别计算因子
-    results = {}
+    close = data['close']
+    length = 3
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    # 计算价格变化
+    delta = close.diff()
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.rsi(length=3)
+    # 分离涨跌
+    gain = delta.where(delta > 0, 0)
+    loss = (-delta).where(delta < 0, 0)
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # 使用EMA计算平均涨跌幅（与pandas_ta一致）
+    avg_gain = gain.ewm(alpha=1/length, min_periods=length, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1/length, min_periods=length, adjust=False).mean()
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
+    # 计算RS和RSI
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
 
-        results[symbol] = result
-
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
-
-    return factor_df
+    return rsi

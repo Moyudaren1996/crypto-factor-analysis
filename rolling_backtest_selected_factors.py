@@ -2,7 +2,7 @@
 """
 滚动回测策略（5分钟级别）：使用selected_factors.txt中的因子
 - 从factors/目录动态加载因子
-- 支持pandas_ta因子和自定义因子
+- 使用纯pandas/numpy实现的因子（无pandas_ta依赖）
 - 单周期快速测试模式
 """
 
@@ -15,7 +15,6 @@ from typing import Tuple, List, Dict
 from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
-import pandas_ta  # 激活 DataFrame.ta 访问器
 
 import joblib
 from joblib import Parallel, delayed

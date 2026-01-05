@@ -1,64 +1,57 @@
 """
-Oscillator指标 - STOCH (使用pandas_ta)
+Oscillator指标 - Stochastic Oscillator (随机振荡器)
 
 因子描述:
-    使用pandas_ta库计算的STOCH技术指标
+    随机振荡器，比较收盘价与一定时期内价格范围的关系
 
 参数:
-    k=6, d=3, smooth_k=2
+    k: 6, d: 3, smooth_k: 2
+
+计算公式:
+    lowest_low = low.rolling(k).min()
+    highest_high = high.rolling(k).max()
+    fast_k = 100 * (close - lowest_low) / (highest_high - lowest_low)
+    slow_k = fast_k.rolling(smooth_k).mean()  (输出此值)
+    slow_d = slow_k.rolling(d).mean()
 
 输出:
-    标准化因子值
+    因子值DataFrame (slow_k, 0-100)
 
 数据依赖:
-    - OHLCV数据
+    - high, low, close
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算STOCH因子 (pandas_ta)
+    计算Stochastic Oscillator因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
 
     Returns:
-        pd.DataFrame: 因子值
+        pd.DataFrame: 因子值 (slow_k)
     """
-    # 对每个币种分别计算因子
-    results = {}
+    high = data['high']
+    low = data['low']
+    close = data['close']
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    k_period = 6
+    d_period = 3
+    smooth_k = 2
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.stoch(k=6, d=3, smooth_k=2)
+    # 计算最低价和最高价
+    lowest_low = low.rolling(window=k_period).min()
+    highest_high = high.rolling(window=k_period).max()
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # 计算Fast %K
+    fast_k = 100 * (close - lowest_low) / (highest_high - lowest_low)
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
+    # 计算Slow %K（平滑后的%K）
+    slow_k = fast_k.rolling(window=smooth_k).mean()
 
-        results[symbol] = result
-
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
-
-    return factor_df
+    return slow_k

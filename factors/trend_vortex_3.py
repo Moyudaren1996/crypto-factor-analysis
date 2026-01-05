@@ -1,64 +1,65 @@
 """
-Trend指标 - VORTEX (使用pandas_ta)
+Trend指标 - Vortex Indicator (涡旋指标)
 
 因子描述:
-    使用pandas_ta库计算的VORTEX技术指标
+    涡旋指标，用于识别趋势的开始和方向
 
 参数:
     length: 3 (15分钟)
 
+计算公式:
+    VM+ = |high - low.shift(1)|
+    VM- = |low - high.shift(1)|
+    TR = max(high-low, |high-close.shift(1)|, |low-close.shift(1)|)
+    VIP = Sum(VM+, length) / Sum(TR, length)
+    VIM = Sum(VM-, length) / Sum(TR, length)
+    输出VIP (正向涡旋)
+
 输出:
-    标准化因子值
+    因子值DataFrame (VIP)
 
 数据依赖:
-    - OHLCV数据
+    - high, low, close
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算VORTEX因子 (pandas_ta)
+    计算Vortex Indicator因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
 
     Returns:
-        pd.DataFrame: 因子值
+        pd.DataFrame: 因子值 (VIP)
     """
-    # 对每个币种分别计算因子
-    results = {}
+    high = data['high']
+    low = data['low']
+    close = data['close']
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    length = 3
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.vortex(length=3)
+    # 计算VM+ 和 VM-
+    vm_plus = (high - low.shift(1)).abs()
+    vm_minus = (low - high.shift(1)).abs()
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # 计算True Range
+    tr1 = high - low
+    tr2 = (high - close.shift(1)).abs()
+    tr3 = (low - close.shift(1)).abs()
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
+    tr = pd.DataFrame(np.maximum(np.maximum(tr1.values, tr2.values), tr3.values),
+                       index=close.index, columns=close.columns)
 
-        results[symbol] = result
+    # 计算VIP和VIM
+    sum_vm_plus = vm_plus.rolling(window=length).sum()
+    sum_vm_minus = vm_minus.rolling(window=length).sum()
+    sum_tr = tr.rolling(window=length).sum()
 
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
+    vip = sum_vm_plus / sum_tr
 
-    return factor_df
+    return vip

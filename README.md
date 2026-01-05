@@ -6,7 +6,6 @@
 ## 项目信息
 
 - **GitHub**: https://github.com/Moyudaren1996/crypto-factor-analysis
-- **Token**: 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
 
 ---
 
@@ -16,7 +15,7 @@
 |---------|------|
 | **数据频率** | 5分钟K线 |
 | **覆盖币种** | 37个主流加密货币 |
-| **因子数量** | 162个（6大类技术指标因子） |
+| **因子数量** | 55个精选因子（6大类技术指标因子） |
 | **分析方法** | IC分析、分组分析、多空策略回测 |
 | **回测框架** | LightGBM滚动回测 |
 
@@ -46,15 +45,14 @@ crypto-factor-analysis/
 │   ├── long_short_strategy.py # 多空策略（Sharpe/回撤）
 │   └── result_saver.py        # 结果保存（CSV/图表）
 │
-├── factors/                   # 因子库（162个因子）
-│   ├── momentum_*.py          # 动量因子（34个）
-│   ├── oscillator_*.py        # 摆动因子（26个）
-│   ├── trend_*.py             # 趋势因子（36个）
-│   ├── volatility_*.py        # 波动性因子（30个）
-│   ├── volume_*.py            # 成交量因子（13个）
-│   └── price_*.py             # 价格因子
+├── factors/                   # 精选因子库（55个因子，纯pandas/numpy实现）
+│   ├── momentum_*.py          # 动量因子（26个）
+│   ├── oscillator_*.py        # 摆动因子（19个）
+│   ├── trend_*.py             # 趋势因子（2个）
+│   ├── volatility_*.py        # 波动性因子（4个）
+│   └── volume_*.py            # 成交量因子（4个）
 │
-├── factor_discard/            # 废弃因子存放区（75个）
+├── factor_discard/            # 废弃因子存放区（182个）
 │
 ├── main_5m/                   # 原始数据（36个币种5分钟K线）
 │   └── {SYMBOL}_USDT_5m_*.csv
@@ -383,6 +381,7 @@ def calculate(data):
 
 ## 更新日志
 
+- **2026-01-02**: 因子库精简至55个精选因子，移除pandas_ta依赖，全部改为纯pandas/numpy实现
 - **2025-01-01**: 新增 `rolling_backtest_selected_factors.py` 精选因子回测脚本
 - **2025-01-01**: 项目结构整理，文档移至 `docs/` 目录，创建 `CLAUDE.md` 规则文件
 - **初始版本**: 162个因子，完整分析框架

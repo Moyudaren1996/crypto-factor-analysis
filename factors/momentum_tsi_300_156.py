@@ -1,29 +1,33 @@
 """
-Momentum指标 - TSI (使用pandas_ta)
+Momentum指标 - TSI (True Strength Index)
 
 因子描述:
-    使用pandas_ta库计算的TSI技术指标
+    真实强度指数，使用双重平滑的动量指标
 
 参数:
-    long=300, short=156
+    long: 300, short: 156
+
+计算公式:
+    delta = close.diff()
+    double_smoothed_pc = EMA(EMA(delta, short), long)
+    double_smoothed_abs_pc = EMA(EMA(|delta|, short), long)
+    TSI = 100 * double_smoothed_pc / double_smoothed_abs_pc
 
 输出:
-    标准化因子值
+    因子值DataFrame
 
 数据依赖:
-    - OHLCV数据
+    - close: 收盘价
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算TSI因子 (pandas_ta)
+    计算TSI因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
@@ -31,34 +35,22 @@ def calculate(data):
     Returns:
         pd.DataFrame: 因子值
     """
-    # 对每个币种分别计算因子
-    results = {}
+    close = data['close']
+    long_period = 300
+    short_period = 156
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    # 计算价格变化
+    delta = close.diff()
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.tsi(long=300, short=156)
+    # 双重EMA平滑
+    pc_first_smooth = delta.ewm(span=short_period, adjust=False).mean()
+    pc_double_smooth = pc_first_smooth.ewm(span=long_period, adjust=False).mean()
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # 对|delta|做同样的双重平滑
+    abs_pc_first_smooth = delta.abs().ewm(span=short_period, adjust=False).mean()
+    abs_pc_double_smooth = abs_pc_first_smooth.ewm(span=long_period, adjust=False).mean()
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
+    # 计算TSI
+    tsi = 100 * pc_double_smooth / abs_pc_double_smooth
 
-        results[symbol] = result
-
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
-
-    return factor_df
+    return tsi

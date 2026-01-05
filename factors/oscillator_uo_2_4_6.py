@@ -1,29 +1,35 @@
 """
-Oscillator指标 - UO (使用pandas_ta)
+Oscillator指标 - Ultimate Oscillator (终极振荡器)
 
 因子描述:
-    使用pandas_ta库计算的UO技术指标
+    终极振荡器，使用三个不同时间周期的加权平均来减少波动
 
 参数:
-    fast=2, medium=4, slow=6
+    fast: 2, medium: 4, slow: 6
+
+计算公式:
+    BP = close - min(low, previous_close)
+    TR = max(high, previous_close) - min(low, previous_close)
+    Avg_fast = Sum(BP, fast) / Sum(TR, fast)
+    Avg_medium = Sum(BP, medium) / Sum(TR, medium)
+    Avg_slow = Sum(BP, slow) / Sum(TR, slow)
+    UO = 100 * ((4 * Avg_fast) + (2 * Avg_medium) + Avg_slow) / 7
 
 输出:
-    标准化因子值
+    因子值DataFrame (0-100)
 
 数据依赖:
-    - OHLCV数据
+    - high, low, close
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算UO因子 (pandas_ta)
+    计算Ultimate Oscillator因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
@@ -31,34 +37,34 @@ def calculate(data):
     Returns:
         pd.DataFrame: 因子值
     """
-    # 对每个币种分别计算因子
-    results = {}
+    high = data['high']
+    low = data['low']
+    close = data['close']
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    fast = 2
+    medium = 4
+    slow = 6
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.uo(fast=2, medium=4, slow=6)
+    # 前一期收盘价
+    prev_close = close.shift(1)
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # Buying Pressure
+    bp = close - pd.DataFrame(np.minimum(low.values, prev_close.values),
+                               index=close.index, columns=close.columns)
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
+    # True Range
+    tr_high = pd.DataFrame(np.maximum(high.values, prev_close.values),
+                            index=close.index, columns=close.columns)
+    tr_low = pd.DataFrame(np.minimum(low.values, prev_close.values),
+                           index=close.index, columns=close.columns)
+    tr = tr_high - tr_low
 
-        results[symbol] = result
+    # 计算各周期平均值
+    avg_fast = bp.rolling(window=fast).sum() / tr.rolling(window=fast).sum()
+    avg_medium = bp.rolling(window=medium).sum() / tr.rolling(window=medium).sum()
+    avg_slow = bp.rolling(window=slow).sum() / tr.rolling(window=slow).sum()
 
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
+    # 计算UO
+    uo = 100 * ((4 * avg_fast) + (2 * avg_medium) + avg_slow) / 7
 
-    return factor_df
+    return uo

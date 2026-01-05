@@ -1,29 +1,35 @@
 """
-Volume指标 - MFI (使用pandas_ta)
+Volume指标 - MFI (Money Flow Index)
 
 因子描述:
-    使用pandas_ta库计算的MFI技术指标
+    资金流量指数，结合价格和成交量的动量指标
 
 参数:
     length: 3 (15分钟)
 
+计算公式:
+    TP = (high + low + close) / 3
+    Raw MF = TP * volume
+    Positive MF = Sum(Raw MF where TP > TP.shift(1), length)
+    Negative MF = Sum(Raw MF where TP < TP.shift(1), length)
+    MFR = Positive MF / Negative MF
+    MFI = 100 - (100 / (1 + MFR))
+
 输出:
-    标准化因子值
+    因子值DataFrame (0-100)
 
 数据依赖:
-    - OHLCV数据
+    - high, low, close, volume
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算MFI因子 (pandas_ta)
+    计算MFI因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
@@ -31,34 +37,30 @@ def calculate(data):
     Returns:
         pd.DataFrame: 因子值
     """
-    # 对每个币种分别计算因子
-    results = {}
+    high = data['high']
+    low = data['low']
+    close = data['close']
+    volume = data['volume']
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    length = 3
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.mfi(length=3)
+    # 计算Typical Price
+    tp = (high + low + close) / 3
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # 计算Raw Money Flow
+    raw_mf = tp * volume
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
+    # 判断资金流向
+    tp_diff = tp.diff()
+    positive_mf = raw_mf.where(tp_diff > 0, 0)
+    negative_mf = raw_mf.where(tp_diff < 0, 0)
 
-        results[symbol] = result
+    # 计算周期内正负资金流
+    sum_positive = positive_mf.rolling(window=length).sum()
+    sum_negative = negative_mf.rolling(window=length).sum()
 
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
+    # 计算MFR和MFI
+    mfr = sum_positive / sum_negative
+    mfi = 100 - (100 / (1 + mfr))
 
-    return factor_df
+    return mfi

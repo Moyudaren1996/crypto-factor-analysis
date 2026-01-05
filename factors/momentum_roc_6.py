@@ -1,29 +1,30 @@
 """
-Momentum指标 - ROC (使用pandas_ta)
+Momentum指标 - ROC (Rate of Change)
 
 因子描述:
-    使用pandas_ta库计算的ROC技术指标
+    价格变化率，计算当前价格相对于N期前价格的百分比变化
 
 参数:
     length: 6 (30分钟)
 
+计算公式:
+    ROC = (close - close.shift(length)) / close.shift(length) * 100
+
 输出:
-    标准化因子值
+    因子值DataFrame
 
 数据依赖:
-    - OHLCV数据
+    - close: 收盘价
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算ROC因子 (pandas_ta)
+    计算ROC因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
@@ -31,34 +32,10 @@ def calculate(data):
     Returns:
         pd.DataFrame: 因子值
     """
-    # 对每个币种分别计算因子
-    results = {}
+    close = data['close']
+    length = 6
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    # ROC = (当前价格 - N期前价格) / N期前价格 * 100
+    roc = (close - close.shift(length)) / close.shift(length) * 100
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.roc(length=6)
-
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
-
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
-
-        results[symbol] = result
-
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
-
-    return factor_df
+    return roc

@@ -1,64 +1,50 @@
 """
-Momentum指标 - PPO (使用pandas_ta)
+Momentum指标 - PPO (Percentage Price Oscillator)
 
 因子描述:
-    使用pandas_ta库计算的PPO技术指标
+    价格震荡百分比，MACD的百分比版本
 
 参数:
-    fast=3, slow=6, signal=2
+    fast: 3, slow: 6, signal: 2
+
+计算公式:
+    PPO = ((EMA(close, fast) - EMA(close, slow)) / EMA(close, slow)) * 100
+    Signal = EMA(PPO, signal)
+    输出PPO线
 
 输出:
-    标准化因子值
+    因子值DataFrame
 
 数据依赖:
-    - OHLCV数据
+    - close: 收盘价
 
-来源: rolling_backtest_5m_strategy_regression.py
 创建日期: 2024-12-01
-版本: v1.0
+版本: v2.0 (纯pandas实现)
 """
 import pandas as pd
 import numpy as np
-import pandas_ta as ta
 
 def calculate(data):
     """
-    计算PPO因子 (pandas_ta)
+    计算PPO因子
 
     Args:
         data: dict with keys ['open', 'high', 'low', 'close', 'volume']
 
     Returns:
-        pd.DataFrame: 因子值
+        pd.DataFrame: 因子值 (PPO线)
     """
-    # 对每个币种分别计算因子
-    results = {}
+    close = data['close']
 
-    for symbol in data['close'].columns:
-        # 构建单个币种的DataFrame
-        symbol_data = pd.DataFrame({
-            'open': data['open'][symbol],
-            'high': data['high'][symbol],
-            'low': data['low'][symbol],
-            'close': data['close'][symbol],
-            'volume': data['volume'][symbol]
-        })
+    fast = 3
+    slow = 6
+    signal = 2
 
-        # 调用pandas_ta计算指标
-        result = symbol_data.ta.ppo(fast=3, slow=6, signal=2)
+    # 计算快慢EMA
+    ema_fast = close.ewm(span=fast, adjust=False).mean()
+    ema_slow = close.ewm(span=slow, adjust=False).mean()
 
-        # 处理返回结果
-        if result is None:
-            results[symbol] = pd.Series(np.nan, index=symbol_data.index)
-            continue
+    # 计算PPO
+    ppo = ((ema_fast - ema_slow) / ema_slow) * 100
 
-        # 如果返回DataFrame，取第一列
-        if isinstance(result, pd.DataFrame):
-            result = result.iloc[:, 0]
-
-        results[symbol] = result
-
-    # 合并所有币种的结果
-    factor_df = pd.DataFrame(results)
-
-    return factor_df
+    return ppo
